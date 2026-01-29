@@ -109,3 +109,14 @@ button:hover { border-color: rgba(255,255,255,0.18); }
 
 .hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 .footer { margin-top: 14px; color: var(--muted); font-size: 12px; opacity: 0.9; }
+
+/* Fix dropdown readability on dark background */
+select {
+  background-color: #0f172a;
+  color: #e6edf7;
+}
+
+select option {
+  background-color: #0f172a;
+  color: #e6edf7;
+}
