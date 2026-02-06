@@ -1,87 +1,124 @@
 // ui.js
 //
-// This file is responsible for all user interface behavior.
-// It connects user actions (form input, sorting, searching, buttons)
-// to the underlying inventory logic and algorithms.
+// This file handles all user interface logic for the inventory application.
+// Responsibilities:
+// - Rendering the inventory table and summary
+// - Handling form input and validation feedback
+// - Wiring up search and sort functionality
+// - Calling the InventoryService for all CRUD operations
+// - Reflecting permission state (read-only vs admin unlocked)
 //
-// For Milestone Three, this file was enhanced to apply a custom
-// merge sort algorithm when ordering inventory data.
+// Milestone Three:
+// - Uses a custom merge sort implementation for predictable O(n log n) sorting
+//
+// Milestone Four:
+// - All write operations are async due to IndexedDB persistence
+// - Write actions are gated behind a permission manager
+// - Includes a Change PIN flow that enforces least privilege
 
 import { mergeSort } from "./algorithms.js";
 
-// Formats numbers as U.S. currency for display purposes
+// Helper for formatting currency
 function money(n) {
-  return n.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD"
-  });
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 }
 
-// Safely converts values to strings for rendering
-function text(n) {
-  return String(n ?? "");
+// Safe text conversion for rendering
+function text(v) {
+  return String(v ?? "");
 }
 
 export class InventoryUI {
-  constructor(service) {
-    // Reference to the inventory service, which manages data and validation
+  constructor(service, permissionManager) {
     this.service = service;
+    this.perms = permissionManager;
 
-    // Cache frequently used DOM elements to avoid repeated lookups
+    // Form elements
     this.form = document.getElementById("itemForm");
     this.name = document.getElementById("name");
     this.sku = document.getElementById("sku");
     this.quantity = document.getElementById("quantity");
     this.price = document.getElementById("price");
     this.msg = document.getElementById("formMessage");
-    this.cancelBtn = document.getElementById("cancelBtn");
     this.saveBtn = document.getElementById("saveBtn");
+    this.cancelBtn = document.getElementById("cancelBtn");
 
+    // Table + toolbar elements
     this.tableBody = document.getElementById("tableBody");
     this.search = document.getElementById("search");
     this.sort = document.getElementById("sort");
     this.summary = document.getElementById("summary");
     this.resetBtn = document.getElementById("resetBtn");
 
-    // Tracks whether the form is being used to edit an existing item
+    // Permission controls
+    this.unlockBtn = document.getElementById("unlockBtn");
+    this.lockBtn = document.getElementById("lockBtn");
+    this.changePinBtn = document.getElementById("changePinBtn");
+    this.authLine = document.getElementById("authLine");
+
+    // Internal UI state
     this.editId = null;
+    this.isBusy = false;
   }
 
-  // Initializes event listeners and renders the initial inventory view
   init() {
-    // Handle form submission for both adding and updating items
+    // Handle add/update submit
     this.form.addEventListener("submit", (e) => {
       e.preventDefault();
       this.onSave();
     });
 
-    // Clears the form and exits edit mode
+    // Cancel editing
     this.cancelBtn.addEventListener("click", () => this.clearForm());
 
-    // Re-render inventory when search input changes
+    // Read-only operations
     this.search.addEventListener("input", () => this.render());
-
-    // Re-render inventory when sort selection changes
     this.sort.addEventListener("change", () => this.render());
 
-    // Reset demo data for testing and presentation purposes
-    this.resetBtn.addEventListener("click", () => {
-      this.service.resetDemoData();
-      this.clearForm();
-      this.render();
-    });
+    // Write operations (permission gated)
+    this.resetBtn.addEventListener("click", () => this.onResetDemo());
 
-    // Initial render on page load
+    // Permission actions
+    this.unlockBtn.addEventListener("click", () => this.onUnlock());
+    this.lockBtn.addEventListener("click", () => this.onLock());
+    this.changePinBtn.addEventListener("click", () => this.onChangePin());
+
+    this.updateAuthUI();
     this.render();
   }
 
-  // Displays feedback messages to the user
-  setMessage(kind, message) {
-    this.msg.className = "message " + (kind || "");
+  // Controls UI disable state during async operations
+  setBusy(isBusy) {
+    this.isBusy = isBusy;
+
+    this.saveBtn.disabled = isBusy || !this.perms.canWrite();
+    this.resetBtn.disabled = isBusy || !this.perms.canWrite();
+    this.cancelBtn.disabled = isBusy;
+  }
+
+  // Updates UI based on permission state
+  updateAuthUI() {
+    const unlocked = this.perms.canWrite();
+
+    if (this.authLine) {
+      this.authLine.textContent = unlocked
+        ? "Mode: Admin (unlocked)"
+        : "Mode: Read-only (locked)";
+    }
+
+    this.saveBtn.disabled = !unlocked || this.isBusy;
+    this.resetBtn.disabled = !unlocked || this.isBusy;
+    this.lockBtn.disabled = !unlocked;
+
+    // Least privilege: only unlocked admins can change PIN
+    this.changePinBtn.disabled = !unlocked;
+  }
+
+  setMessage(type, message) {
+    this.msg.className = "message " + (type || "");
     this.msg.textContent = message || "";
   }
 
-  // Reads current form values into an object
   readDraft() {
     return {
       name: this.name.value,
@@ -91,32 +128,36 @@ export class InventoryUI {
     };
   }
 
-  // Handles saving a new item or updating an existing item
-  onSave() {
-    const draft = this.readDraft();
+  async onSave() {
+    if (this.isBusy) return;
 
+    this.setBusy(true);
+    this.setMessage("", "");
+
+    const draft = this.readDraft();
     let result;
+
     if (this.editId) {
-      // Update existing item
-      result = this.service.updateItem(this.editId, draft);
+      result = await this.service.updateItem(this.editId, draft);
     } else {
-      // Add new item
-      result = this.service.addItem(draft);
+      result = await this.service.addItem(draft);
     }
 
-    // Display validation or error messages if operation fails
     if (!result.ok) {
       this.setMessage("bad", result.message);
+      this.setBusy(false);
+      this.updateAuthUI();
       return;
     }
 
-    // Success path
     this.setMessage("good", result.message);
     this.clearForm();
     this.render();
+
+    this.setBusy(false);
+    this.updateAuthUI();
   }
 
-  // Resets the form to its default "add item" state
   clearForm() {
     this.editId = null;
     this.name.value = "";
@@ -124,12 +165,15 @@ export class InventoryUI {
     this.quantity.value = "";
     this.price.value = "";
     this.saveBtn.textContent = "Save Item";
-    this.setMessage("", "");
     this.name.focus();
   }
 
-  // Populates the form with an item's data for editing
   startEdit(item) {
+    if (!this.perms.canWrite()) {
+      this.setMessage("bad", "Read-only mode. Unlock admin mode to edit items.");
+      return;
+    }
+
     this.editId = item.id;
     this.name.value = item.name;
     this.sku.value = item.sku;
@@ -140,58 +184,42 @@ export class InventoryUI {
     this.name.focus();
   }
 
-  // Builds a comparison function based on the selected sort field
-  // This comparator is passed into the merge sort algorithm
   buildComparator(key) {
-    // Numeric comparison for quantity and price
     if (key === "quantity" || key === "price") {
       return (a, b) => a[key] - b[key];
     }
 
-    // String comparison for name and SKU
-    return (a, b) => {
-      const av = String(a[key]).toLowerCase();
-      const bv = String(b[key]).toLowerCase();
-      return av.localeCompare(bv);
-    };
+    return (a, b) =>
+      String(a[key]).toLowerCase().localeCompare(String(b[key]).toLowerCase());
   }
 
-  // Applies filtering and sorting to inventory data
   getFilteredSortedItems() {
-    const raw = this.service.getAll();
+    const items = this.service.getAll();
     const query = (this.search.value || "").trim().toLowerCase();
 
-    // Filter inventory by name or SKU
-    let filtered = raw;
+    let filtered = items;
     if (query) {
-      filtered = raw.filter(item =>
-        item.name.toLowerCase().includes(query) ||
-        item.sku.toLowerCase().includes(query)
+      filtered = items.filter(
+        i =>
+          i.name.toLowerCase().includes(query) ||
+          i.sku.toLowerCase().includes(query)
       );
     }
 
-    // Determine sort key and direction
     const [key, direction] = (this.sort.value || "name:asc").split(":");
     const comparator = this.buildComparator(key);
 
-    // Milestone Three enhancement:
-    // Use custom merge sort instead of built-in Array.sort
     let sorted = mergeSort([...filtered], comparator);
-
-    // Reverse order if descending sort selected
-    if (direction === "desc") {
-      sorted.reverse();
-    }
+    if (direction === "desc") sorted.reverse();
 
     return sorted;
   }
 
-  // Updates the inventory summary statistics
   renderSummary(items) {
     const totalItems = items.length;
     const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
     const totalValue = items.reduce(
-      (sum, i) => sum + (i.quantity * i.price),
+      (sum, i) => sum + i.quantity * i.price,
       0
     );
 
@@ -201,72 +229,145 @@ export class InventoryUI {
       `Total value: ${money(totalValue)}`;
   }
 
-  // Renders the inventory table and attaches action handlers
+  async onResetDemo() {
+    if (this.isBusy) return;
+
+    this.setBusy(true);
+    this.setMessage("", "");
+
+    const res = await this.service.resetDemoData();
+    if (!res.ok) {
+      this.setMessage("bad", res.message);
+      this.setBusy(false);
+      this.updateAuthUI();
+      return;
+    }
+
+    this.setMessage("good", res.message);
+    this.clearForm();
+    this.render();
+
+    this.setBusy(false);
+    this.updateAuthUI();
+  }
+
+  async onUnlock() {
+    if (!this.perms.hasAdminConfigured()) {
+      const newPin = prompt(
+        "Set an Admin PIN (at least 4 characters). This is stored as a hash in your browser."
+      );
+      if (newPin === null) return;
+
+      const res = await this.perms.setAdminPin(newPin);
+      this.setMessage(res.ok ? "good" : "bad", res.message);
+      this.updateAuthUI();
+      return;
+    }
+
+    const pin = prompt("Enter Admin PIN to unlock write actions:");
+    if (pin === null) return;
+
+    const res = await this.perms.unlock(pin);
+    this.setMessage(res.ok ? "good" : "bad", res.message);
+    this.updateAuthUI();
+  }
+
+  onLock() {
+    this.perms.lock();
+    this.setMessage("good", "Locked. Write actions disabled.");
+    this.updateAuthUI();
+  }
+
+  async onChangePin() {
+    // Enforce least privilege
+    if (!this.perms.canWrite()) {
+      this.setMessage("bad", "Unlock admin mode to change the PIN.");
+      return;
+    }
+
+    if (!this.perms.hasAdminConfigured()) {
+      this.setMessage("bad", "No PIN exists yet. Use Unlock to set one.");
+      return;
+    }
+
+    const currentPin = prompt("Enter CURRENT Admin PIN:");
+    if (currentPin === null) return;
+
+    const newPin = prompt("Enter NEW Admin PIN (at least 4 characters):");
+    if (newPin === null) return;
+
+    const confirmPin = prompt("Re-enter NEW Admin PIN:");
+    if (confirmPin === null) return;
+
+    if (String(newPin).trim() !== String(confirmPin).trim()) {
+      this.setMessage("bad", "New PIN entries did not match.");
+      return;
+    }
+
+    const res = await this.perms.changePin(currentPin, newPin);
+    this.setMessage(res.ok ? "good" : "bad", res.message);
+    this.updateAuthUI();
+  }
+
   render() {
     const items = this.getFilteredSortedItems();
-
     this.renderSummary(items);
     this.tableBody.innerHTML = "";
 
-    // Handle empty inventory case
     if (items.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
       td.colSpan = 6;
-      td.textContent = "No items yet.";
+      td.textContent = "No items found.";
       td.style.color = "rgba(255,255,255,0.7)";
       tr.appendChild(td);
       this.tableBody.appendChild(tr);
       return;
     }
 
-    // Render each inventory item as a table row
+    const canWrite = this.perms.canWrite();
+
     for (const item of items) {
       const tr = document.createElement("tr");
-      const value = item.quantity * item.price;
 
       tr.innerHTML = `
         <td>${text(item.name)}</td>
         <td>${text(item.sku)}</td>
         <td class="num">${text(item.quantity)}</td>
         <td class="num">${money(item.price)}</td>
-        <td class="num">${money(value)}</td>
+        <td class="num">${money(item.quantity * item.price)}</td>
         <td>
-          <button type="button" class="ghost" data-action="edit" data-id="${item.id}">
-            Edit
-          </button>
-          <button type="button" class="ghost" data-action="delete" data-id="${item.id}">
-            Delete
-          </button>
+          <button type="button" class="ghost" data-action="edit" data-id="${item.id}" ${canWrite ? "" : "disabled"}>Edit</button>
+          <button type="button" class="ghost" data-action="delete" data-id="${item.id}" ${canWrite ? "" : "disabled"}>Delete</button>
         </td>
       `;
 
-      // Attach handlers for edit and delete actions
-      tr.querySelectorAll("button").forEach(button => {
-        button.addEventListener("click", () => {
-          const action = button.getAttribute("data-action");
-          const id = button.getAttribute("data-id");
-          const selected = this.service.getAll().find(i => i.id === id);
+      tr.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (this.isBusy) return;
 
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          const selected = this.service.getAll().find(i => i.id === id);
           if (!selected) return;
 
           if (action === "edit") {
             this.startEdit(selected);
-          } else if (action === "delete") {
-            const confirmed = confirm(
-              `Delete "${selected.name}" (${selected.sku})?`
-            );
+            return;
+          }
 
-            if (!confirmed) return;
+          if (action === "delete") {
+            const ok = confirm(`Delete "${selected.name}" (${selected.sku})?`);
+            if (!ok) return;
 
-            const result = this.service.deleteItem(id);
-            if (!result.ok) {
-              this.setMessage("bad", result.message);
-              return;
-            }
+            this.setBusy(true);
 
-            this.setMessage("good", result.message);
+            const res = await this.service.deleteItem(id);
+            this.setMessage(res.ok ? "good" : "bad", res.message);
+
             this.render();
+            this.setBusy(false);
+            this.updateAuthUI();
           }
         });
       });

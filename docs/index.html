@@ -6,20 +6,35 @@
   <title>Inventory Tracker (Enhanced)</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div class="container">
     <header class="header">
-      <div class="badge">CS 499 • Milestone Three</div>
+      <!-- This badge makes it clear what milestone the viewer is looking at -->
+      <div class="badge">CS 499 • Milestone Four</div>
+
       <h1>Inventory Tracker</h1>
+
+      <!-- Short description of what the app is and what changed -->
       <p class="sub">
-        Enhanced web version of a CS-210 console inventory tracker.
+        Enhanced web version of a CS-210 console inventory tracker. Milestone Four adds database persistence using IndexedDB and includes a basic permission gate for write actions.
       </p>
+
+      <!-- These two lines are updated in app.js/ui.js to give a quick status readout -->
+      <div class="status-row">
+        <p class="status-pill" id="statusLine">Status: Loading inventory from database...</p>
+        <p class="status-pill" id="authLine">Mode: Read-only (locked)</p>
+      </div>
+
+
     </header>
 
     <main class="grid">
+      <!-- Left side: form for adding/updating inventory items -->
       <section class="card">
         <h2>Add / Update Item</h2>
 
+        <!-- novalidate keeps browser validation from interfering; we handle it ourselves -->
         <form id="itemForm" novalidate>
           <div class="row">
             <label for="name">Name</label>
@@ -42,14 +57,17 @@
           </div>
 
           <div class="actions">
+            <!-- In read-only mode, Save will be disabled by UI logic -->
             <button type="submit" class="primary" id="saveBtn">Save Item</button>
             <button type="button" class="ghost" id="cancelBtn">Cancel</button>
           </div>
 
+          <!-- This message area is used for validation feedback -->
           <p id="formMessage" class="message" aria-live="polite"></p>
         </form>
       </section>
 
+      <!-- Right side: inventory table + search/sort + admin controls -->
       <section class="card">
         <h2>Inventory</h2>
 
@@ -73,7 +91,19 @@
             </select>
           </div>
 
+          <!-- Admin unlock/lock controls -->
           <div class="toolbar-group">
+            <label>Admin</label>
+            <div class="admin-actions">
+              <button type="button" class="ghost" id="unlockBtn">Unlock</button>
+              <button type="button" class="ghost" id="lockBtn">Lock</button>
+              <button type="button" class="ghost" id="changePinBtn">Change PIN</button>
+            </div>
+          </div>
+
+
+          <div class="toolbar-group">
+            <!-- Reset is treated as a write operation, so it requires unlock -->
             <button type="button" class="ghost" id="resetBtn">Reset Demo Data</button>
           </div>
         </div>
@@ -97,7 +127,7 @@
         </div>
 
         <p class="hint">
-          Sorting uses a custom merge sort implementation (O(n log n)). Data is stored locally for now (browser storage). Database persistence will be implemented in the database enhancement milestone.
+          Sorting uses a custom merge sort (O(n log n)). Persistence uses IndexedDB (object store + unique SKU index). Write actions are locked by default and require admin unlock (client-side access control).
         </p>
       </section>
     </main>
@@ -107,6 +137,7 @@
     </footer>
   </div>
 
+  <!-- Module script loads app.js which bootstraps the rest of the app -->
   <script type="module" src="app.js"></script>
 </body>
 </html>

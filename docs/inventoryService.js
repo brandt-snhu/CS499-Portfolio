@@ -1,59 +1,45 @@
 // inventoryService.js
 //
-// This service manages inventory state, validation, and persistence.
-// For Milestone Three, it was enhanced to include a Map-based index
-// for SKU lookups, improving efficiency and clarity.
+// This file is the business logic layer for the inventory app.
+// It handles validation, keeps an in-memory copy for the UI,
+// and now persists data through IndexedDB for Milestone Four.
+//
+// It also enforces write permission at the service layer so that
+// write actions are blocked even if someone tries to bypass the UI.
 
-const STORAGE_KEY = "cs499_inventory_items_v1";
+import { getAllItems, putItem, deleteItemById, clearAndSeed } from "./db.js";
 
-// Generates a reasonably unique identifier for each item
 function makeId() {
-  return crypto.randomUUID
-    ? crypto.randomUUID()
-    : String(Date.now()) + Math.random().toString(16).slice(2);
+  return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
 }
 
-// Safely converts values to numbers
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : NaN;
 }
 
-// Normalizes SKUs so comparisons are consistent
 function normalizeSku(sku) {
   return sku.trim().toUpperCase();
 }
 
-// Loads inventory data from browser storage
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-// Saves inventory data to browser storage
-function saveToStorage(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
-
 export class InventoryService {
-  constructor() {
-    // Primary data structure: array for ordered iteration and rendering
-    this.items = loadFromStorage();
+  constructor(permissionManager) {
+    this.perms = permissionManager;
 
-    // Secondary data structure: Map for fast SKU lookups
-    // This allows average O(1) access instead of linear searches
+    // Primary structure: array for rendering and iteration
+    this.items = [];
+
+    // Secondary structure: Map for fast SKU checks (average O(1))
     this.skuIndex = new Map();
+  }
 
+  // Load items from the database into memory at startup
+  async init() {
+    this.items = await getAllItems();
     this.rebuildIndex();
   }
 
-  // Rebuilds the SKU index to keep it in sync with the items array
+  // Keep the Map index consistent with the array
   rebuildIndex() {
     this.skuIndex.clear();
     for (const item of this.items) {
@@ -61,29 +47,11 @@ export class InventoryService {
     }
   }
 
-  // Resets inventory with small demo data for testing and presentation
-  resetDemoData() {
-    this.items = [
-      { id: makeId(), name: "Coffee Beans", sku: "CB-100", quantity: 3, price: 12.99 },
-      { id: makeId(), name: "Filters", sku: "FLT-200", quantity: 25, price: 4.50 },
-      { id: makeId(), name: "Mugs", sku: "MUG-300", quantity: 6, price: 8.00 },
-    ];
-
-    this.rebuildIndex();
-    saveToStorage(this.items);
-  }
-
-  // Returns a shallow copy to prevent accidental external mutation
   getAll() {
     return [...this.items];
   }
 
-  // Retrieves an item by SKU using the Map-based index
-  getBySku(sku) {
-    return this.skuIndex.get(normalizeSku(sku)) || null;
-  }
-
-  // Validates user input before modifying inventory data
+  // Centralized validation so add/update share the same rules
   validateDraft(draft, { existingId = null } = {}) {
     const name = (draft.name ?? "").trim();
     const skuRaw = (draft.sku ?? "").trim();
@@ -100,7 +68,9 @@ export class InventoryService {
       return { ok: false, message: "Price must be a non-negative number." };
     }
 
-    // Uses Map for efficient SKU uniqueness validation
+    // SKU uniqueness is enforced two ways:
+    // - In memory using Map
+    // - In IndexedDB using a unique index on sku
     const existing = this.skuIndex.get(sku);
     if (existing && existing.id !== existingId) {
       return { ok: false, message: "SKU must be unique." };
@@ -109,21 +79,40 @@ export class InventoryService {
     return { ok: true, message: "OK", value: { name, sku, quantity, price } };
   }
 
-  addItem(draft) {
+  // Small helper to enforce least privilege
+  requireWritePermission() {
+    if (!this.perms.canWrite()) {
+      return { ok: false, message: "Read-only mode. Unlock admin mode to make changes." };
+    }
+    return { ok: true };
+  }
+
+  async addItem(draft) {
+    const gate = this.requireWritePermission();
+    if (!gate.ok) return gate;
+
     const v = this.validateDraft(draft);
     if (!v.ok) return v;
 
     const item = { id: makeId(), ...v.value };
-    this.items.push(item);
 
-    // Update Map index to keep data structures in sync
+    try {
+      await putItem(item);
+    } catch {
+      // If the DB unique index blocks the insert, show a friendly message
+      return { ok: false, message: "Database rejected this item (possible duplicate SKU)." };
+    }
+
+    this.items.push(item);
     this.skuIndex.set(item.sku, item);
-    saveToStorage(this.items);
 
     return { ok: true, message: "Item added.", item };
   }
 
-  updateItem(id, draft) {
+  async updateItem(id, draft) {
+    const gate = this.requireWritePermission();
+    if (!gate.ok) return gate;
+
     const v = this.validateDraft(draft, { existingId: id });
     if (!v.ok) return v;
 
@@ -131,30 +120,57 @@ export class InventoryService {
     if (idx === -1) return { ok: false, message: "Item not found." };
 
     const oldSku = normalizeSku(this.items[idx].sku);
-    const nextSku = normalizeSku(v.value.sku);
+    const updated = { ...this.items[idx], ...v.value };
 
-    this.items[idx] = { ...this.items[idx], ...v.value };
+    try {
+      await putItem(updated);
+    } catch {
+      return { ok: false, message: "Database rejected this update (possible duplicate SKU)." };
+    }
 
-    // Maintain correctness of the SKU index
-    if (oldSku !== nextSku) {
+    this.items[idx] = updated;
+
+    const newSku = normalizeSku(updated.sku);
+    if (oldSku !== newSku) {
       this.skuIndex.delete(oldSku);
     }
-    this.skuIndex.set(nextSku, this.items[idx]);
+    this.skuIndex.set(newSku, updated);
 
-    saveToStorage(this.items);
-    return { ok: true, message: "Item updated.", item: this.items[idx] };
+    return { ok: true, message: "Item updated.", item: updated };
   }
 
-  deleteItem(id) {
+  async deleteItem(id) {
+    const gate = this.requireWritePermission();
+    if (!gate.ok) return gate;
+
     const idx = this.items.findIndex(i => i.id === id);
     if (idx === -1) return { ok: false, message: "Item not found." };
 
     const sku = normalizeSku(this.items[idx].sku);
 
+    await deleteItemById(id);
+
     this.items.splice(idx, 1);
     this.skuIndex.delete(sku);
 
-    saveToStorage(this.items);
     return { ok: true, message: "Item deleted." };
+  }
+
+  async resetDemoData() {
+    const gate = this.requireWritePermission();
+    if (!gate.ok) return gate;
+
+    const demo = [
+      { id: makeId(), name: "Coffee Beans", sku: "CB-100", quantity: 3, price: 12.99 },
+      { id: makeId(), name: "Filters", sku: "FLT-200", quantity: 25, price: 4.50 },
+      { id: makeId(), name: "Mugs", sku: "MUG-300", quantity: 6, price: 8.00 },
+    ];
+
+    await clearAndSeed(demo);
+
+    this.items = demo;
+    this.rebuildIndex();
+
+    return { ok: true, message: "Demo data reset and saved to database." };
   }
 }

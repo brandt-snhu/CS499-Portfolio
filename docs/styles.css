@@ -1,4 +1,10 @@
-/* Minimal, readable styling. No frameworks. */
+/* styles.css
+ *
+ * This stylesheet supports a dark UI theme and keeps layout consistent.
+ * I also included a specific fix for select/option readability because
+ * dropdown text can become hard to read depending on OS/browser defaults.
+ */
+
 :root {
   --bg: #0b1220;
   --panel: #111a2d;
@@ -12,6 +18,7 @@
 }
 
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -20,7 +27,9 @@ body {
 }
 
 .container { max-width: 1100px; margin: 0 auto; padding: 28px 16px 40px; }
+
 .header { margin-bottom: 18px; }
+
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -30,8 +39,40 @@ body {
   color: var(--muted);
   background: rgba(255,255,255,0.03);
 }
+
 h1 { margin: 10px 0 6px; font-size: 30px; }
-.sub { margin: 0; color: var(--muted); max-width: 70ch; }
+
+.sub { margin: 0; color: var(--muted); max-width: 80ch; }
+
+/* Makes Status + Mode stand out more */
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.status-pill {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* subtle emphasis difference between the two */
+#statusLine {
+  border-color: rgba(59,130,246,0.45);
+  background: rgba(59,130,246,0.12);
+}
+
+#authLine {
+  border-color: rgba(34,197,94,0.35);
+  background: rgba(34,197,94,0.10);
+}
+
 
 .grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; align-items: start; }
 @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -47,6 +88,7 @@ h2 { margin: 0 0 12px; font-size: 18px; }
 
 .row { display: grid; gap: 6px; margin-bottom: 10px; }
 label { font-size: 13px; color: var(--muted); }
+
 input, select {
   width: 100%;
   padding: 10px 10px;
@@ -56,9 +98,11 @@ input, select {
   color: var(--text);
   outline: none;
 }
+
 input:focus, select:focus { border-color: rgba(59,130,246,0.7); }
 
 .actions { display: flex; gap: 10px; margin-top: 10px; }
+
 button {
   padding: 10px 12px;
   border-radius: 10px;
@@ -67,9 +111,11 @@ button {
   color: var(--text);
   cursor: pointer;
 }
+
 button.primary { background: rgba(59,130,246,0.25); border-color: rgba(59,130,246,0.4); }
 button.ghost { background: rgba(255,255,255,0.03); }
 button:hover { border-color: rgba(255,255,255,0.18); }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .message { margin: 10px 0 0; min-height: 18px; font-size: 13px; color: var(--muted); }
 .message.good { color: var(--good); }
@@ -82,8 +128,14 @@ button:hover { border-color: rgba(255,255,255,0.18); }
   align-items: end;
   margin-bottom: 12px;
 }
+
 .toolbar-group { display: grid; gap: 6px; min-width: 180px; }
 .toolbar-group:last-child { min-width: auto; }
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
 
 .summary {
   border: 1px solid var(--border);
@@ -110,12 +162,13 @@ button:hover { border-color: rgba(255,255,255,0.18); }
 .hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 .footer { margin-top: 14px; color: var(--muted); font-size: 12px; opacity: 0.9; }
 
-/* Fix dropdown readability on dark background */
+/* Fix dropdown readability on dark background
+ * Some browsers render option lists with default colors that clash.
+ */
 select {
   background-color: #0f172a;
   color: #e6edf7;
 }
-
 select option {
   background-color: #0f172a;
   color: #e6edf7;
