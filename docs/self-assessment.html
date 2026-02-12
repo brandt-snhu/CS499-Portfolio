@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Professional Self-Assessment | Trevor Brandt</title>
+  <link rel="stylesheet" href="./portfolio.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="badge">CS 499 • Professional Self-Assessment</div>
+      <h1>Professional Self-Assessment</h1>
+      <p class="lead">
+        This section serves as the formal introduction to my ePortfolio. It summarizes the strengths I developed
+        throughout the Computer Science program and explains how my capstone enhancements provide evidence for the
+        program outcomes.
+      </p>
+
+      <div class="ctaRow">
+        <a class="btn" href="./index.html">Home</a>
+        <a class="btn" href="./artifact.html">Artifact & Enhancements</a>
+        <a class="btn" href="./code-review.html">Code Review Video</a>
+        <a class="btn primary" href="./app/">Launch Enhanced App</a>
+      </div>
+    </header>
+
+    <main class="card wide">
+      <h2>Self-Assessment</h2>
+
+      <p>
+        Completing the Computer Science program and developing this ePortfolio has allowed me to see measurable growth
+        in both my technical ability and my professional identity. When I began the program, my focus was primarily on
+        learning programming syntax and completing assignments successfully. Over time, my perspective shifted from
+        writing code that works to designing systems that are maintainable, efficient, secure, and aligned with real-world
+        constraints. The capstone process, particularly enhancing a single artifact across multiple computer science domains,
+        reinforced how interconnected software engineering, algorithms, databases, and security truly are.
+      </p>
+
+      <p>
+        Throughout the program, I developed a stronger understanding of how collaboration supports better software outcomes.
+        Although many assignments were completed individually, the process of participating in code reviews, responding to
+        instructor feedback, and refining artifacts for clarity helped simulate professional collaboration. Writing modular,
+        readable code with clear comments became increasingly important as I prepared my work for review. In my capstone artifact,
+        I structured the application into separate modules for UI logic, business logic, database interaction, and permissions.
+        This organization reflects industry best practices and supports collaborative environments where multiple developers can
+        work within clearly defined boundaries.
+      </p>
+
+      <p>
+        Communication has also been a significant area of growth. In addition to technical implementation, I have learned to explain
+        design decisions, justify trade-offs, and adapt explanations to different audiences. The code review video required me to present
+        technical enhancements in a way that would be understandable to peers or a manager rather than focusing solely on low-level
+        implementation details. Writing structured narratives for each enhancement also strengthened my ability to communicate complex
+        ideas clearly and professionally. These skills are essential in real-world environments where technical decisions must support
+        stakeholder understanding and organizational decision-making.
+      </p>
+
+      <p>
+        The enhancement of my inventory tracking application demonstrates my competency in data structures and algorithms. I implemented
+        a custom merge sort algorithm to manage sorting operations with predictable O(n log n) complexity, rather than relying entirely on
+        built-in methods. I also used a Map-based indexing structure to provide constant-time SKU lookups and reinforce uniqueness constraints
+        in memory. These improvements required thoughtful consideration of efficiency, scalability, and maintainability. They also reflect my
+        ability to evaluate computing solutions and manage trade-offs between simplicity and performance.
+      </p>
+
+      <p>
+        From a software engineering perspective, I transformed an early C++ console application into a modular web-based application.
+        This involved separating responsibilities across UI, service, and database layers, improving usability, and restructuring the codebase
+        for maintainability. The addition of IndexedDB introduced persistent storage through an object store with a defined schema, primary key,
+        and unique index. Implementing transaction-based CRUD operations reinforced my understanding of database integrity and lifecycle management.
+        I also considered deployment constraints by selecting IndexedDB specifically because it works within a static GitHub Pages environment,
+        demonstrating the ability to match technical solutions to environmental limitations.
+      </p>
+
+      <p>
+        Security has become an increasingly important consideration in my development process. In the capstone artifact, I implemented input
+        validation at multiple layers, enforced unique constraints at both the service and database levels, and introduced a least-privilege
+        permission gate that defaults the application to read-only mode. Administrative write actions require unlocking with a hashed PIN stored
+        in the browser. While this is not equivalent to full server-side authentication, it reflects a security mindset that anticipates misuse
+        and enforces boundaries even in small-scale applications. This experience has reinforced the importance of designing with security in mind
+        from the outset rather than treating it as an afterthought.
+      </p>
+
+      <p>
+        Beyond this artifact, coursework in software testing, system architecture, and database management has contributed to a broader understanding
+        of the software development lifecycle. I have learned to approach development iteratively, evaluate feedback constructively, and refine both
+        functionality and presentation. The process of enhancing a single artifact across three major computer science domains helped me see how these
+        domains intersect rather than exist independently.
+      </p>
+
+      <p>
+        Collectively, the artifacts in this ePortfolio demonstrate growth in software design, algorithmic reasoning, database implementation,
+        communication, and security awareness. The enhancements build upon one another: architectural improvements support algorithmic efficiency,
+        database persistence strengthens reliability, and permission controls reinforce security principles. Together, they form a cohesive representation
+        of my abilities as a developing computer science professional and illustrate my readiness to contribute meaningfully in a technical environment.
+      </p>
+
+      <h2>How the Artifact Supports the Program Outcomes</h2>
+      <ol class="list">
+        <li><strong>Collaboration & decision support:</strong> modular structure, readable comments, and clear documentation that supports review and stakeholder understanding.</li>
+        <li><strong>Professional communication:</strong> narratives, code review, and ePortfolio organization adapted to a peer/manager audience.</li>
+        <li><strong>Algorithmic principles:</strong> merge sort and indexing demonstrate performance reasoning and trade-offs.</li>
+        <li><strong>Tools and techniques:</strong> modular web app, IndexedDB persistence, and iterative refinement to deliver value.</li>
+        <li><strong>Security mindset:</strong> validation, integrity constraints, least privilege write access, and safe handling of admin state.</li>
+      </ol>
+    </main>
+
+    <footer class="footer">
+      <span>Trevor Brandt • CS 499 ePortfolio</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventory Tracker (Enhanced)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- Small UX improvement for keyboard users -->
+  <a class="skipLink" href="#mainContent">Skip to content</a>
+
+  <div class="container">
+    <header class="header">
+      <!-- Quick nav back to portfolio (useful once this is part of GitHub Pages) -->
+      <nav class="topNav" aria-label="Page navigation">
+        <!-- If you keep this app at the root, set href="./" or your portfolio URL as needed -->
+        <a class="backLink" href="../index.html">← Back to ePortfolio</a>
+      </nav>
+
+      <!-- This badge makes it clear what milestone the viewer is looking at -->
+      <div class="badge">CS 499 • Enhanced Artifact</div>
+
+      <h1>Inventory Tracker</h1>
+
+      <!-- Short description of what the app is and what changed -->
+      <p class="sub">
+        Enhanced artifact demonstrating design, DSA, and database improvements.
+      </p>
+
+      <!-- These two lines are updated in app.js/ui.js to give a quick status readout -->
+      <div class="status-row" aria-label="Application status">
+        <p class="status-pill" id="statusLine" aria-live="polite">Status: Loading inventory from database...</p>
+        <p class="status-pill" id="authLine" aria-live="polite">Mode: Read-only (locked)</p>
+      </div>
+
+      <!-- Tiny helper text that makes the permission model obvious to reviewers -->
+      <p class="sub smallNote">
+        Note: Write actions (save, edit, delete, reset, change PIN) require admin unlock.
+      </p>
+    </header>
+
+    <main id="mainContent" class="grid" aria-label="Inventory tracker content">
+      <!-- Left side: form for adding/updating inventory items -->
+      <section class="card" aria-labelledby="formTitle">
+        <h2 id="formTitle">Add / Update Item</h2>
+
+        <!-- novalidate keeps browser validation from interfering; we handle it ourselves -->
+        <form id="itemForm" novalidate>
+          <div class="row">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" maxlength="60" autocomplete="off" />
+          </div>
+
+          <div class="row">
+            <label for="sku">SKU</label>
+            <input id="sku" name="sku" type="text" maxlength="20" autocomplete="off" />
+          </div>
+
+          <div class="row">
+            <label for="quantity">Quantity</label>
+            <input id="quantity" name="quantity" type="number" min="0" step="1" />
+          </div>
+
+          <div class="row">
+            <label for="price">Price</label>
+            <input id="price" name="price" type="number" min="0" step="0.01" />
+          </div>
+
+          <div class="actions">
+            <!-- In read-only mode, Save will be disabled by UI logic -->
+            <button type="submit" class="primary" id="saveBtn" aria-label="Save inventory item">Save Item</button>
+            <button type="button" class="ghost" id="cancelBtn" aria-label="Cancel editing and clear the form">Cancel</button>
+          </div>
+
+          <!-- This message area is used for validation feedback -->
+          <p id="formMessage" class="message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- Right side: inventory table + search/sort + admin controls -->
+      <section class="card" aria-labelledby="tableTitle">
+        <h2 id="tableTitle">Inventory</h2>
+
+        <div class="toolbar" aria-label="Inventory tools">
+          <div class="toolbar-group">
+            <label for="search">Search</label>
+            <input id="search" type="text" placeholder="Name or SKU" autocomplete="off" />
+          </div>
+
+          <div class="toolbar-group">
+            <label for="sort">Sort</label>
+            <select id="sort" aria-label="Sort inventory list">
+              <option value="name:asc">Name (A-Z)</option>
+              <option value="name:desc">Name (Z-A)</option>
+              <option value="quantity:asc">Quantity (low-high)</option>
+              <option value="quantity:desc">Quantity (high-low)</option>
+              <option value="price:asc">Price (low-high)</option>
+              <option value="price:desc">Price (high-low)</option>
+              <option value="sku:asc">SKU (A-Z)</option>
+              <option value="sku:desc">SKU (Z-A)</option>
+            </select>
+          </div>
+
+          <!-- Admin unlock/lock controls -->
+          <div class="toolbar-group">
+            <label>Admin</label>
+            <div class="admin-actions" role="group" aria-label="Admin actions">
+              <button type="button" class="ghost" id="unlockBtn" aria-label="Unlock admin mode">Unlock</button>
+              <button type="button" class="ghost" id="lockBtn" aria-label="Lock and disable write actions">Lock</button>
+              <button type="button" class="ghost" id="changePinBtn" aria-label="Change admin PIN">Change PIN</button>
+            </div>
+          </div>
+
+          <div class="toolbar-group">
+            <!-- Reset is treated as a write operation, so it requires unlock -->
+            <button type="button" class="ghost" id="resetBtn" aria-label="Reset demo data in the database">Reset Demo Data</button>
+          </div>
+        </div>
+
+        <div class="summary" id="summary" aria-live="polite"></div>
+
+        <div class="table-wrap">
+          <table class="table" aria-label="Inventory table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>SKU</th>
+                <th class="num">Quantity</th>
+                <th class="num">Price</th>
+                <th class="num">Value</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <p class="hint">
+          Sorting uses a custom merge sort (O(n log n)). Persistence uses IndexedDB (object store + unique SKU index).
+          Write actions are locked by default and require admin unlock (client-side access control).
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Inventory Tracker Enhanced • Web UI + modular JS • CS 499</span>
+    </footer>
+  </div>
+
+  <!-- Module script loads app.js which bootstraps the rest of the app -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

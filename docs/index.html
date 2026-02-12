@@ -3,141 +3,97 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inventory Tracker (Enhanced)</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Trevor Brandt | CS 499 ePortfolio</title>
+  <link rel="stylesheet" href="./portfolio.css" />
 </head>
 
 <body>
   <div class="container">
-    <header class="header">
-      <!-- This badge makes it clear what milestone the viewer is looking at -->
-      <div class="badge">CS 499 • Milestone Four</div>
+    <header class="hero">
+      <div class="badge">CS 499 • Computer Science Capstone</div>
 
-      <h1>Inventory Tracker</h1>
+      <h1>Trevor Brandt</h1>
 
-      <!-- Short description of what the app is and what changed -->
-      <p class="sub">
-        Enhanced web version of a CS-210 console inventory tracker. Milestone Four adds database persistence using IndexedDB and includes a basic permission gate for write actions.
+      <p class="lead">
+        Welcome to my Computer Science ePortfolio. This site presents my capstone work demonstrating growth in
+        software design and engineering, algorithms and data structures, databases, and secure coding practices.
       </p>
 
-      <!-- These two lines are updated in app.js/ui.js to give a quick status readout -->
-      <div class="status-row">
-        <p class="status-pill" id="statusLine">Status: Loading inventory from database...</p>
-        <p class="status-pill" id="authLine">Mode: Read-only (locked)</p>
+      <div class="ctaRow">
+        <a class="btn primary" href="./self-assessment.html">Professional Self-Assessment</a>
+        <a class="btn" href="./artifact.html">Artifact & Enhancements</a>
+        <a class="btn" href="./code-review.html">Code Review Video</a>
       </div>
 
-
+      <div class="quickLinks">
+        <a href="./app/">Launch Enhanced Inventory App</a>
+        <span class="dot">•</span>
+        <a href="./sources.html">Source Code & Downloads</a>
+      </div>
     </header>
 
     <main class="grid">
-      <!-- Left side: form for adding/updating inventory items -->
       <section class="card">
-        <h2>Add / Update Item</h2>
+        <h2>Portfolio Overview</h2>
+        <p>
+          I enhanced a single artifact across three key categories required for the CS 499 capstone:
+          software design and engineering, algorithms and data structures, and databases. Each enhancement
+          includes a narrative describing why the artifact was selected, what changed, and how it aligns with
+          the program outcomes.
+        </p>
 
-        <!-- novalidate keeps browser validation from interfering; we handle it ourselves -->
-        <form id="itemForm" novalidate>
-          <div class="row">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" maxlength="60" autocomplete="off" />
-          </div>
-
-          <div class="row">
-            <label for="sku">SKU</label>
-            <input id="sku" name="sku" type="text" maxlength="20" autocomplete="off" />
-          </div>
-
-          <div class="row">
-            <label for="quantity">Quantity</label>
-            <input id="quantity" name="quantity" type="number" min="0" step="1" />
-          </div>
-
-          <div class="row">
-            <label for="price">Price</label>
-            <input id="price" name="price" type="number" min="0" step="0.01" />
-          </div>
-
-          <div class="actions">
-            <!-- In read-only mode, Save will be disabled by UI logic -->
-            <button type="submit" class="primary" id="saveBtn">Save Item</button>
-            <button type="button" class="ghost" id="cancelBtn">Cancel</button>
-          </div>
-
-          <!-- This message area is used for validation feedback -->
-          <p id="formMessage" class="message" aria-live="polite"></p>
-        </form>
+        <ul class="list">
+          <li><strong>Software Design & Engineering:</strong> Ported a CS-210 console project into a modular web application with clear separation of concerns.</li>
+          <li><strong>Algorithms & Data Structures:</strong> Implemented merge sort for predictable O(n log n) sorting and Map-based indexing for faster lookup.</li>
+          <li><strong>Databases:</strong> Added IndexedDB persistence with schema design, a unique SKU index, and transaction-based CRUD operations.</li>
+        </ul>
       </section>
 
-      <!-- Right side: inventory table + search/sort + admin controls -->
       <section class="card">
-        <h2>Inventory</h2>
+        <h2>Navigation</h2>
+        <div class="navCards">
+          <a class="navCard" href="./self-assessment.html">
+            <h3>Professional Self-Assessment</h3>
+            <p>Formal introduction, strengths, and how coursework prepared me for the field.</p>
+          </a>
 
-        <div class="toolbar">
-          <div class="toolbar-group">
-            <label for="search">Search</label>
-            <input id="search" type="text" placeholder="Name or SKU" autocomplete="off" />
-          </div>
+          <a class="navCard" href="./artifact.html">
+            <h3>Artifact & Enhancements</h3>
+            <p>Original artifact, enhanced artifact, and narratives for each category.</p>
+          </a>
 
-          <div class="toolbar-group">
-            <label for="sort">Sort</label>
-            <select id="sort">
-              <option value="name:asc">Name (A-Z)</option>
-              <option value="name:desc">Name (Z-A)</option>
-              <option value="quantity:asc">Quantity (low-high)</option>
-              <option value="quantity:desc">Quantity (high-low)</option>
-              <option value="price:asc">Price (low-high)</option>
-              <option value="price:desc">Price (high-low)</option>
-              <option value="sku:asc">SKU (A-Z)</option>
-              <option value="sku:desc">SKU (Z-A)</option>
-            </select>
-          </div>
+          <a class="navCard" href="./code-review.html">
+            <h3>Code Review Video</h3>
+            <p>Walkthrough of the original code, planned improvements, and outcome alignment.</p>
+          </a>
 
-          <!-- Admin unlock/lock controls -->
-          <div class="toolbar-group">
-            <label>Admin</label>
-            <div class="admin-actions">
-              <button type="button" class="ghost" id="unlockBtn">Unlock</button>
-              <button type="button" class="ghost" id="lockBtn">Lock</button>
-              <button type="button" class="ghost" id="changePinBtn">Change PIN</button>
-            </div>
-          </div>
-
-
-          <div class="toolbar-group">
-            <!-- Reset is treated as a write operation, so it requires unlock -->
-            <button type="button" class="ghost" id="resetBtn">Reset Demo Data</button>
-          </div>
+          <a class="navCard" href="./sources.html">
+            <h3>Source Code & Downloads</h3>
+            <p>Repository links, original C++ files, and downloadable submissions.</p>
+          </a>
         </div>
+      </section>
 
-        <div class="summary" id="summary"></div>
-
-        <div class="table-wrap">
-          <table class="table" aria-label="Inventory table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>SKU</th>
-                <th class="num">Quantity</th>
-                <th class="num">Price</th>
-                <th class="num">Value</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-
-        <p class="hint">
-          Sorting uses a custom merge sort (O(n log n)). Persistence uses IndexedDB (object store + unique SKU index). Write actions are locked by default and require admin unlock (client-side access control).
+      <section class="card wide">
+        <h2>Capstone Outcomes (At a Glance)</h2>
+        <p class="muted">
+          The pages linked above provide concrete evidence for each outcome through the enhanced artifact,
+          narratives, and self-assessment.
         </p>
+
+        <ol class="list">
+          <li>Collaborative environments and decision support (code review + documentation + maintainable structure)</li>
+          <li>Professional communication (narratives, self-assessment, and portfolio organization)</li>
+          <li>Algorithmic principles and trade-offs (merge sort + indexing + performance reasoning)</li>
+          <li>Innovative tools and techniques (modular web app + IndexedDB + structured UI design)</li>
+          <li>Security mindset (validation, least privilege write access, integrity constraints)</li>
+        </ol>
       </section>
     </main>
 
     <footer class="footer">
-      <span>Inventory Tracker Enhanced • Web UI + modular JS • CS 499</span>
+      <span>CS 499 ePortfolio • GitHub Pages</span>
     </footer>
   </div>
-
-  <!-- Module script loads app.js which bootstraps the rest of the app -->
-  <script type="module" src="app.js"></script>
 </body>
 </html>

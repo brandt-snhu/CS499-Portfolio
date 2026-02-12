@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Artifact & Enhancements | Trevor Brandt</title>
+  <link rel="stylesheet" href="./portfolio.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="badge">CS 499 • Artifact & Enhancements</div>
+      <h1>Inventory Tracker Artifact</h1>
+      <p class="lead">
+        This capstone uses a single artifact enhanced across all three required categories:
+        software design and engineering, algorithms and data structures, and databases.
+      </p>
+
+      <div class="ctaRow">
+        <a class="btn" href="./index.html">Home</a>
+        <a class="btn" href="./self-assessment.html">Self-Assessment</a>
+        <a class="btn" href="./code-review.html">Code Review Video</a>
+        <a class="btn primary" href="./app/">Launch Enhanced App</a>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Original Artifact</h2>
+        <p>
+          The original version was created in CS-210 as a C++ console inventory tracker. It demonstrated core programming concepts
+          and basic data handling in a command-line environment.
+        </p>
+        <ul class="list">
+          <li>Console-based input/output</li>
+          <li>Basic inventory tracking logic</li>
+          <li>Limited modularity and no persistence</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Enhanced Artifact (Web App)</h2>
+        <p>
+          The enhanced version is a modular web application designed to run on GitHub Pages. It includes a structured UI,
+          separation of concerns (UI/service/database), custom sorting logic, persistent storage via IndexedDB, and a permission gate.
+        </p>
+        <ul class="list">
+          <li>Search, sort, and CRUD operations</li>
+          <li>Merge sort and in-memory indexing</li>
+          <li>IndexedDB persistence with unique SKU index</li>
+          <li>Read-only default mode with admin unlock</li>
+        </ul>
+
+        <div class="ctaRow">
+          <a class="btn primary" href="./app/">Open the Enhanced App</a>
+          <a class="btn" href="./sources.html">View Source & Downloads</a>
+        </div>
+      </section>
+
+      <section class="card wide">
+        <h2>Enhancement 1: Software Design and Engineering</h2>
+        <p>
+          The first enhancement focused on transforming the artifact into a maintainable, modular application with a clear UI.
+          I separated responsibilities into logical modules and created a layout that better fits a real-world user workflow.
+          This enhancement improved readability, reusability, and long-term maintainability.
+        </p>
+        <ul class="list">
+          <li>Modular structure (UI layer + service layer)</li>
+          <li>Improved usability and clearer workflow</li>
+          <li>More professional formatting and comments</li>
+        </ul>
+      </section>
+
+      <section class="card wide">
+        <h2>Enhancement 2: Algorithms and Data Structures</h2>
+        <p>
+          The second enhancement focused on algorithmic reasoning and efficiency. I implemented a custom merge sort algorithm to handle
+          sorting consistently with predictable O(n log n) performance. I also introduced Map-based indexing for fast SKU lookups and to support
+          uniqueness checking efficiently.
+        </p>
+        <ul class="list">
+          <li>Merge sort for sorting by name, SKU, quantity, or price</li>
+          <li>Comparator-based sorting design</li>
+          <li>Map-based indexing for faster lookup and validation support</li>
+        </ul>
+      </section>
+
+      <section class="card wide">
+        <h2>Enhancement 3: Databases</h2>
+        <p>
+          The third enhancement introduced persistence and database concepts using IndexedDB, which is a native browser database suitable for
+          static hosting on GitHub Pages. I defined an object store schema, added a unique SKU index to enforce integrity, and implemented
+          transaction-based CRUD operations. The service layer maintains consistent state between the UI and the database.
+        </p>
+        <ul class="list">
+          <li>IndexedDB database setup (object store + primary key)</li>
+          <li>Unique SKU index to prevent duplicates</li>
+          <li>Transaction-based create, read, update, and delete</li>
+          <li>Permission gate to restrict writes in read-only mode</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Trevor Brandt • CS 499 ePortfolio</span>
+    </footer>
+  </div>
+</body>
+</html>

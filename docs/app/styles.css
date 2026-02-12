@@ -40,6 +40,43 @@ body {
   background: rgba(255,255,255,0.03);
 }
 
+.skipLink{
+  position: absolute;
+  left: -999px;
+  top: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  z-index: 9999;
+}
+.skipLink:focus{
+  left: 10px;
+}
+
+.topNav{
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+.backLink{
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(255,255,255,0.25);
+}
+.backLink:hover{
+  border-bottom-color: rgba(255,255,255,0.6);
+}
+
+.smallNote{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.95;
+}
+
 h1 { margin: 10px 0 6px; font-size: 30px; }
 
 .sub { margin: 0; color: var(--muted); max-width: 80ch; }
